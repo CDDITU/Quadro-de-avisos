@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadro de Avisos Integrado</title>
+    <!-- Tailwind CSS para Estilização Rápida e Moderna -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para Ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans antialiased text-gray-800">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- BARRA LATERAL (MENU) -->
+        <aside class="w-64 bg-slate-800 text-white flex flex-col hidden md:flex">
+            <div class="p-5 text-xl font-bold tracking-wider border-b border-slate-700 flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-list text-orange-500"></i> Sistema Interno
+            </div>
+            <nav class="flex-1 p-4 space-y-2">
+                <button onclick="switchTab('dashboard')" id="btn-nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition bg-slate-700 text-white font-medium">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard
+                </button>
+                <!-- Aba Pedida: "Quadro Avisos" no menu -->
+                <button onclick="switchTab('avisos')" id="btn-nav-avisos" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition text-slate-400 hover:bg-slate-700 hover:text-white">
+                    <i class="fa-solid fa-bullhorn w-5 text-center"></i> Quadro Avisos
+                </button>
+            </nav>
+            <div class="p-4 border-t border-slate-700 text-xs text-slate-500 text-center">
+                v1.0.0 &copy; 2026
+            </div>
+        </aside>
+
+        <!-- CONTEÚDO PRINCIPAL -->
+        <main class="flex-1 flex flex-col overflow-y-auto">
+            
+            <!-- TOPO / HEADER -->
+            <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6 border-b border-gray-200">
+                <h1 id="page-title" class="text-xl font-bold text-gray-800">Dashboard</h1>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-medium">Operacional</span>
+                </div>
+            </header>
+
+            <!-- CONTEÚDO DINÂMICO DE ABAS -->
+            <div class="p-6 max-w-7xl w-full mx-auto space-y-6">
+                
+                <!-- ABA: DASHBOARD -->
+                <section id="tab-dashboard" class="space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Botão Laranja com Badge Indicador de Avisos do Dia -->
+                        <button id="btn-avisos-dia" class="relative overflow-hidden bg-gradient-to-br from-orange-500 to-amber-600 text-white p-6 rounded-2xl shadow-md transition-all hover:scale-[1.02] hover:shadow-lg flex flex-col justify-between h-40 text-left group">
+                            <div class="flex justify-between items-start w-full">
+                                <div class="bg-white/20 p-3 rounded-xl backdrop-blur-sm">
+                                    <i class="fa-solid fa-bell text-2xl animate-pulse"></i>
+                                </div>
+                                <!-- Badge Indicador -->
+                                <span id="badge-count" class="bg-white text-orange-600 font-bold text-xs px-2.5 py-1 rounded-full shadow-sm min-w-[24px] text-center border border-orange-100">0</span>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold">Avisos do Dia</h3>
+                                <p class="text-orange-100 text-xs mt-1 group-hover:underline">Clique para visualização rápida &rarr;</p>
+                            </div>
+                        </button>
+
+                        <!-- Card Informativo Estático -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-between h-40">
+                            <div class="bg-blue-50 text-blue-600 p-3 rounded-xl w-fit"><i class="fa-solid fa-calendar-check text-xl"></i></div>
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Status Geral</h3>
+                                <p class="text-2xl font-black text-gray-800 mt-1">Conectado</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ABA: QUADRO DE AVISOS (CRUD & FILTROS) -->
+                <section id="tab-avisos" class="hidden space-y-6">
+                    <!-- Topo do Gerenciamento -->
+                    <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <!-- Filtros Solicitados -->
+                        <div class="flex flex-wrap gap-2" id="filter-container">
+                            <button onclick="setFilter('ativas')" id="filter-ativas" class="px-4 py-2 text-sm font-medium rounded-lg transition bg-blue-600 text-white shadow-sm">Ativas</button>
+                            <button onclick="setFilter('hoje')" id="filter-hoje" class="px-4 py-2 text-sm font-medium rounded-lg transition bg-gray-100 text-gray-600 hover:bg-gray-200">Hoje</button>
+                            <button onclick="setFilter('7dias')" id="filter-7dias" class="px-4 py-2 text-sm font-medium rounded-lg transition bg-gray-100 text-gray-600 hover:bg-gray-200">Próximos 7 dias</button>
+                            <button onclick="setFilter('todos')" id="filter-todos" class="px-4 py-2 text-sm font-medium rounded-lg transition bg-gray-100 text-gray-600 hover:bg-gray-200">Todos</button>
+                        </div>
+                        
+                        <button onclick="openFormModal()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-medium px-4 py-2.5 rounded-lg flex items-center justify-center gap-2 transition shadow-sm">
+                            <i class="fa-solid fa-plus text-sm"></i> Criar Novo Aviso
+                        </button>
+                    </div>
+
+                    <!-- Lista de Cards de Avisos -->
+                    <div id="container-avisos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Inserido dinamicamente via JS -->
+                        <div class="col-span-full py-12 flex flex-col items-center justify-center text-gray-400">
+                            <i class="fa-solid fa-spinner text-3xl animate-spin mb-3"></i>
+                            <p>Carregando comunicados do banco de dados...</p>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL 1: FORMULÁRIO (CRIAR / EDITAR) -->
+    <div id="modal-form" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-xl overflow-hidden transform transition-all flex flex-col">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-slate-50">
+                <h2 id="modal-form-title" class="text-xl font-bold text-slate-800">Novo Aviso</h2>
+                <button onclick="closeFormModal()" class="text-gray-400 hover:text-gray-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="form-aviso" class="p-6 space-y-4">
+                <input type="hidden" id="aviso-id">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Título do Aviso</label>
+                    <input type="text" id="aviso-titulo" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm" placeholder="Ex: Manutenção da Frota programada">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Conteúdo informativo</label>
+                    <textarea id="aviso-conteudo" required rows="4" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm" placeholder="Descreva os detalhes aqui..."></textarea>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Data de Publicação</label>
+                        <input type="date" id="aviso-data-inicio" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Data de Expiração</label>
+                        <input type="date" id="aviso-data-fim" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm">
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-gray-100 flex justify-end gap-3">
+                    <button type="button" onclick="closeFormModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition">Cancelar</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition shadow-sm">Salvar Registro</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: VISUALIZAÇÃO RÁPIDA (AVISOS DO DIA) -->
+    <div id="modal-dia" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-xl rounded-2xl shadow-xl overflow-hidden transform transition-all flex flex-col max-h-[85vh]">
+            <div class="p-6 bg-gradient-to-r from-orange-500 to-amber-500 text-white flex justify-between items-center shadow-md">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-bullhorn text-lg"></i>
+                    <h2 class="text-xl font-bold">Comunicados de Hoje</h2>
+                </div>
+                <button onclick="closeDiaModal()" class="text-white/80 hover:text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="container-modal-dia" class="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1">
+                <!-- Inserido dinamicamente via JS -->
+            </div>
+            <div class="p-4 bg-white border-t border-gray-100 flex justify-end">
+                <button onclick="closeDiaModal()" class="px-5 py-2 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition shadow-sm">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGICA DE COMPORTAMENTO INTERNO DO LAYOUT -->
+    <script>
+        // Alternância de abas simples
+        window.switchTab = function(tab) {
+            const sections = { dashboard: 'tab-dashboard', avisos: 'tab-avisos' };
+            const navButtons = { dashboard: 'btn-nav-dashboard', avisos: 'btn-nav-avisos' };
+            const title = { dashboard: 'Dashboard Omnichannel', avisos: 'Painel de Controle - Quadro de Avisos' };
+            
+            Object.keys(sections).forEach(key => {
+                document.getElementById(sections[key]).classList.toggle('hidden', key !== tab);
+                const btn = document.getElementById(navButtons[key]);
+                if (key === tab) {
+                    btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition bg-slate-700 text-white font-medium";
+                } else {
+                    btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition text-slate-400 hover:bg-slate-700 hover:text-white";
+                }
+            });
+            document.getElementById('page-title').innerText = title[tab];
+        }
+    </script>
+
+    <!-- INTEGRAÇÃO CORE FIREBASE FIRESTORE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { 
+            getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // Suas Credenciais Fornecidas
+        const firebaseConfig = {
+            apiKey: "AIzaSyDG_lUj5dfoawA6ElBxv79f2acVqDKN3bg",
+            authDomain: "quadro-de-avisos-2ea31.firebaseapp.com",
+            projectId: "quadro-de-avisos-2ea31",
+            storageBucket: "quadro-de-avisos-2ea31.firebasestorage.app",
+            messagingSenderId: "256469390855",
+            appId: "1:256469390855:web:6c1aed35cf65691f7afca2"
+        };
+
+        // Inicializações
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const colRef = collection(db, "avisos");
+
+        // Estado local da aplicação
+        let localAvisos = [];
+        let currentFilter = 'ativas'; // Padrão solicitado de início
+
+        // Data helpers locais (Formato YYYY-MM-DD string)
+        const getTodayString = () => {
+            const d = new Date();
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        };
+
+        // Ouvinte em tempo real (Realtime Sync do Firestore)
+        const q = query(colRef, orderBy("dataInicio", "desc"));
+        onSnapshot(q, (snapshot) => {
+            localAvisos = [];
+            snapshot.forEach(doc => {
+                localAvisos.push({ id: doc.id, ...doc.data() });
+            });
+            processDashboardIndicators();
+            renderAvisos();
+        }, (error) => {
+            console.error("Erro no Sync Firestore: ", error);
+        });
+
+        // Processa as métricas críticas e o badge do dia no Dashboard
+        function processDashboardIndicators() {
+            const hoje = getTodayString();
+            const avisosDoDia = localAvisos.filter(a => hoje >= a.dataInicio && hoje <= a.dataFim);
+            
+            const badge = document.getElementById('badge-count');
+            badge.innerText = avisosDoDia.length;
+            
+            const btnDia = document.getElementById('btn-avisos-dia');
+            btnDia.onclick = () => openDiaModal(avisosDoDia);
+        }
+
+        // Renderiza os dados filtrados na Aba de Avisos
+        function renderAvisos() {
+            const container = document.getElementById('container-avisos');
+            const hoje = getTodayString();
+            
+            // Lógica de Filtros solicitada
+            let filtered = [...localAvisos];
+            if (currentFilter === 'hoje') {
+                filtered = localAvisos.filter(a => hoje >= a.dataInicio && hoje <= a.dataFim);
+            } else if (currentFilter === 'ativas') {
+                filtered = localAvisos.filter(a => hoje <= a.dataFim);
+            } else if (currentFilter === '7dias') {
+                const dateLimit = new Date();
+                dateLimit.setDate(dateLimit.getDate() + 7);
+                const limitStr = dateLimit.toISOString().split('T')[0];
+                filtered = localAvisos.filter(a => a.dataInicio <= limitStr && a.dataFim >= hoje);
+            }
+
+            if(filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center bg-white border border-dashed border-gray-300 rounded-xl text-gray-500">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2"></i>
+                        <p class="font-medium text-sm">Nenhum aviso encontrado neste filtro.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(aviso => {
+                const isActive = hoje >= aviso.dataInicio && hoje <= aviso.dataFim;
+                const badgeStatus = isActive 
+                    ? `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] uppercase font-bold px-2 py-0.5 rounded-md">Ativo</span>`
+                    : `<span class="bg-gray-100 text-gray-600 border border-gray-200 text-[10px] uppercase font-bold px-2 py-0.5 rounded-md">Inativo / Fora da validade</span>`;
+
+                return `
+                <div class="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden">
+                    <div class="p-5 space-y-3">
+                        <div class="flex justify-between items-start gap-2">
+                            ${badgeStatus}
+                            <div class="flex gap-1">
+                                <button onclick="editAviso('${aviso.id}')" class="text-gray-400 hover:text-blue-600 p-1 text-sm rounded transition" title="Editar"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="deleteAviso('${aviso.id}')" class="text-gray-400 hover:text-red-600 p-1 text-sm rounded transition" title="Excluir"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-base leading-tight">${aviso.titulo}</h3>
+                            <p class="text-xs text-gray-400 mt-1"><i class="fa-regular fa-clock"></i> Vigência: ${formatDate(aviso.dataInicio)} até ${formatDate(aviso.dataFim)}</p>
+                        </div>
+                        <p class="text-gray-600 text-sm whitespace-pre-wrap line-clamp-4 pt-1 border-t border-gray-50">${aviso.conteudo}</p>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // Manipulação de Filtros (Ajuste visual de classes)
+        window.setFilter = function(filterType) {
+            currentFilter = filterType;
+            const filters = ['todos', 'hoje', '7dias', 'ativas'];
+            filters.forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if(f === filterType) {
+                    btn.className = "px-4 py-2 text-sm font-medium rounded-lg transition bg-blue-600 text-white shadow-sm";
+                } else {
+                    btn.className = "px-4 py-2 text-sm font-medium rounded-lg transition bg-gray-100 text-gray-600 hover:bg-gray-200";
+                }
+            });
+            renderAvisos();
+        }
+
+        // Submissão do Formulário (Create e Update)
+        document.getElementById('form-aviso').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('aviso-id').value;
+            const payload = {
+                titulo: document.getElementById('aviso-titulo').value,
+                conteudo: document.getElementById('aviso-conteudo').value,
+                dataInicio: document.getElementById('aviso-data-inicio').value,
+                dataFim: document.getElementById('aviso-data-fim').value
+            };
+
+            try {
+                if(id) {
+                    // Update
+                    const docRef = doc(db, "avisos", id);
+                    await updateDoc(docRef, payload);
+                } else {
+                    // Create
+                    await addDoc(colRef, payload);
+                }
+                closeFormModal();
+            } catch (err) {
+                alert("Erro ao salvar no banco Firestore: " + err.message);
+            }
+        });
+
+        // Deletar Documento (Delete do CRUD)
+        window.deleteAviso = async function(id) {
+            if(confirm("Tem certeza que deseja excluir permanentemente este comunicado?")) {
+                try {
+                    await deleteDoc(doc(db, "avisos", id));
+                } catch(err) {
+                    alert("Erro ao excluir: " + err.message);
+                }
+            }
+        }
+
+        // Preparar modal para Edição (Update do CRUD)
+        window.editAviso = function(id) {
+            const item = localAvisos.find(a => a.id === id);
+            if(!item) return;
+
+            document.getElementById('aviso-id').value = item.id;
+            document.getElementById('aviso-titulo').value = item.titulo;
+            document.getElementById('aviso-conteudo').value = item.conteudo;
+            document.getElementById('aviso-data-inicio').value = item.dataInicio;
+            document.getElementById('aviso-data-fim').value = item.dataFim;
+
+            document.getElementById('modal-form-title').innerText = "Editar Comunicado";
+            document.getElementById('modal-form').classList.remove('hidden');
+        }
+
+        // Gerenciamento de janelas modais simples
+        window.openFormModal = function() {
+            document.getElementById('form-aviso').reset();
+            document.getElementById('aviso-id').value = "";
+            document.getElementById('modal-form-title').innerText = "Novo Aviso";
+            document.getElementById('modal-form').classList.remove('hidden');
+            
+            // Define data padrão de hoje para agilizar preenchimento
+            document.getElementById('aviso-data-inicio').value = getTodayString();
+        }
+        window.closeFormModal = function() {
+            document.getElementById('modal-form').classList.add('hidden');
+        }
+
+        window.openDiaModal = function(listaDoDia = []) {
+            const container = document.getElementById('container-modal-dia');
+            if(listaDoDia.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fa-regular fa-face-smile text-3xl mb-2 text-gray-400"></i>
+                        <p class="font-medium text-sm">Nenhum aviso urgente listado para a data de hoje!</p>
+                    </div>`;
+            } else {
+                container.innerHTML = listaDoDia.map(aviso => `
+                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                        <h4 class="font-bold text-gray-900 text-base border-b border-gray-100 pb-2 mb-2 flex justify-between items-center">
+                            <span>${aviso.titulo}</span>
+                        </h4>
+                        <p class="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">${aviso.conteudo}</p>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('modal-dia').classList.remove('hidden');
+        }
+        window.closeDiaModal = function() {
+            document.getElementById('modal-dia').classList.add('hidden');
+        }
+
+        // Formatação simples de string YYYY-MM-DD para DD/MM/YYYY
+        function formatDate(dateStr) {
+            if(!dateStr) return "";
+            const parts = dateStr.split('-');
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+    </script>
+</body>
+</html>
