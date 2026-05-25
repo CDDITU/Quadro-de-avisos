@@ -2,451 +2,256 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <meta name="theme-color" content="#1e293b">
-    <title>Quadro de Avisos Integrado</title>
-    <!-- Tailwind CSS para Estilização Rápida e Moderna -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Quadro de avisos | Avisos & Ausências</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Melhorias visuais e responsivas adicionais */
+        /* transições suaves e micro-interações */
         * {
             -webkit-tap-highlight-color: transparent;
         }
-        
-        /* Smooth scroll e melhorias touch */
-        .overflow-y-auto {
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
-        
-        /* Cards com efeito hover suave em mobile */
         .card-hover {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-        
-        @media (hover: hover) {
-            .card-hover:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-            }
+        .card-hover:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.1);
         }
-        
-        /* Loading skeleton animation */
-        @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
         }
-        
-        .skeleton {
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-        
-        /* Mobile menu drawer improvements */
-        @media (max-width: 768px) {
-            .mobile-menu-overlay {
-                transition: opacity 0.3s ease;
-            }
-        }
-        
-        /* Better touch targets */
-        button, 
-        [onclick],
-        .touch-target {
-            cursor: pointer;
-            min-height: 44px;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
+        .scrollbar-thin::-webkit-scrollbar-track {
             background: #f1f1f1;
             border-radius: 10px;
         }
-        
-        ::-webkit-scrollbar-thumb {
+        .scrollbar-thin::-webkit-scrollbar-thumb {
             background: #cbd5e1;
             border-radius: 10px;
         }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+        .modal-animation {
+            animation: fadeSlideIn 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
-        
-        /* Modal improvements for mobile */
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.97) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .glass-panel {
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(2px);
+        }
         @media (max-width: 640px) {
-            .modal-content {
-                margin: 16px;
-                max-height: calc(100vh - 32px);
+            .mobile-stack {
+                flex-direction: column;
+                align-items: stretch;
             }
-            
-            input, textarea, select, button {
-                font-size: 16px !important; /* Prevents zoom on focus in iOS */
-            }
-        }
-        
-        /* Badge pulse animation */
-        @keyframes pulse-ring {
-            0% { transform: scale(0.95); opacity: 0.7; }
-            100% { transform: scale(1.05); opacity: 0; }
-        }
-        
-        .badge-pulse::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 100%;
-            height: 100%;
-            border-radius: 9999px;
-            background: rgba(249, 115, 22, 0.4);
-            animation: pulse-ring 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        
-        /* Glassmorphism effect for modals */
-        .glass-backdrop {
-            backdrop-filter: blur(8px);
-            background: rgba(0, 0, 0, 0.5);
-        }
-        
-        /* Floating action button for mobile */
-        .fab-mobile {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .fab-mobile:active {
-            transform: scale(0.95);
-        }
-        
-        /* Improved card layout */
-        .line-clamp-3 {
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
         }
     </style>
 </head>
 <body class="bg-gradient-to-br from-gray-50 to-gray-100 font-sans antialiased text-gray-800">
 
-    <!-- Mobile Menu Overlay -->
-    <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="closeMobileMenu()"></div>
-    
-    <div class="flex h-screen overflow-hidden relative">
-        <!-- BARRA LATERAL (MENU) - Desktop & Mobile Drawer -->
-        <aside id="sidebar" class="fixed md:relative z-50 w-72 bg-gradient-to-b from-slate-800 to-slate-900 text-white flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl md:shadow-none h-full">
-            <div class="p-5 text-xl font-bold tracking-wider border-b border-slate-700/50 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-clipboard-list text-orange-500"></i> 
-                    <span>Sistema Interno</span>
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar Desktop / Tablet (modernizada) -->
+        <aside class="w-72 bg-slate-900 text-white flex flex-col hidden md:flex shadow-2xl z-10">
+            <div class="p-6 text-2xl font-black tracking-tighter border-b border-slate-800/70 flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-orange-500 to-amber-500 p-2 rounded-xl shadow-lg">
+                    <i class="fa-solid fa-chalkboard-user text-white text-xl"></i>
                 </div>
-                <button onclick="closeMobileMenu()" class="md:hidden text-gray-400 hover:text-white text-xl">
-                    <i class="fa-solid fa-times"></i>
-                </button>
+                <span class="bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">Quadro de avisos</span>
             </div>
-            <nav class="flex-1 p-4 space-y-2">
-                <button onclick="switchTab('dashboard'); closeMobileMenu();" id="btn-nav-dashboard" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 bg-slate-700 text-white font-medium hover:bg-slate-600 active:scale-[0.98]">
-                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard
+            <nav class="flex-1 p-5 space-y-3 mt-4">
+                <button onclick="switchTab('dashboard')" id="btn-nav-dashboard" class="w-full flex items-center gap-4 px-5 py-3.5 rounded-xl text-left transition-all duration-200 bg-slate-800 text-white font-semibold shadow-md">
+                    <i class="fa-solid fa-chart-pie w-5 text-orange-400 text-lg"></i> Dashboard
                 </button>
-                <button onclick="switchTab('avisos'); closeMobileMenu();" id="btn-nav-avisos" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 text-slate-400 hover:bg-slate-700 hover:text-white active:scale-[0.98]">
-                    <i class="fa-solid fa-bullhorn w-5 text-center"></i> Quadro Avisos
+                <button onclick="switchTab('avisos')" id="btn-nav-avisos" class="w-full flex items-center gap-4 px-5 py-3.5 rounded-xl text-left transition-all duration-200 text-slate-400 hover:bg-slate-800/70 hover:text-white font-medium">
+                    <i class="fa-solid fa-bullhorn w-5 text-cyan-400"></i> Quadro Avisos
+                </button>
+                <button onclick="switchTab('ausencias')" id="btn-nav-ausencias" class="w-full flex items-center gap-4 px-5 py-3.5 rounded-xl text-left transition-all duration-200 text-slate-400 hover:bg-slate-800/70 hover:text-white font-medium">
+                    <i class="fa-solid fa-calendar-minus w-5 text-rose-400"></i> Ausências
                 </button>
             </nav>
-            <div class="p-4 border-t border-slate-700/50 text-xs text-slate-500 text-center">
-                <i class="fa-solid fa-code-branch"></i> v1.0.0 &copy; 2026
+            <div class="p-5 border-t border-slate-800/50 text-xs text-slate-500 flex justify-between items-center">
+                <span><i class="fa-regular fa-circle-check text-emerald-500"></i> sincronizado</span>
+                <span>v2.0</span>
             </div>
         </aside>
 
-        <!-- CONTEÚDO PRINCIPAL -->
-        <main class="flex-1 flex flex-col overflow-y-auto w-full">
-            
-            <!-- TOPO / HEADER - Mobile friendly -->
-            <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6 py-3 border-b border-gray-200/50">
+        <main class="flex-1 flex flex-col overflow-y-auto bg-gray-50">
+            <!-- Header elegante e responsivo -->
+            <header class="sticky top-0 z-20 bg-white/90 backdrop-blur-md shadow-sm h-16 flex items-center justify-between px-4 md:px-8 border-b border-gray-200/80">
                 <div class="flex items-center gap-3">
-                    <button onclick="toggleMobileMenu()" class="md:hidden text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition touch-target">
-                        <i class="fa-solid fa-bars text-xl"></i>
+                    <button id="mobile-menu-btn" class="md:hidden text-gray-700 text-xl bg-gray-100 p-2 rounded-lg" onclick="toggleMobileSidebar()">
+                        <i class="fa-solid fa-bars"></i>
                     </button>
-                    <h1 id="page-title" class="text-lg sm:text-xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">Dashboard</h1>
+                    <h1 id="page-title" class="text-xl md:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">Dashboard</h1>
                 </div>
-                <div class="flex items-center gap-2 sm:gap-4">
-                    <div class="relative">
-                        <span class="text-xs sm:text-sm bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 px-2 sm:px-3 py-1 rounded-full font-medium flex items-center gap-1">
-                            <i class="fa-solid fa-circle-nodes text-[10px] sm:text-xs"></i>
-                            <span class="hidden sm:inline">Operacional</span>
-                        </span>
+                <div class="flex items-center gap-2">
+                    <div class="hidden sm:flex bg-gray-100 px-3 py-1.5 rounded-full text-xs text-gray-500 items-center gap-2">
+                        <i class="fa-regular fa-clock"></i> <span id="liveClock"></span>
                     </div>
-                    <!-- Mobile quick access badge -->
-                    <button onclick="switchTab('avisos'); closeMobileMenu();" class="md:hidden bg-orange-500 text-white p-2 rounded-full shadow-lg touch-target">
-                        <i class="fa-solid fa-bell text-sm"></i>
-                    </button>
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-400 to-amber-500 flex items-center justify-center text-white shadow-md">
+                        <i class="fa-regular fa-bell text-sm"></i>
+                    </div>
                 </div>
             </header>
 
-            <!-- CONTEÚDO DINÂMICO DE ABAS -->
-            <div class="p-4 sm:p-6 max-w-7xl w-full mx-auto space-y-4 sm:space-y-6">
+            <div class="p-4 md:p-8 max-w-7xl w-full mx-auto space-y-8">
                 
-                <!-- ABA: DASHBOARD -->
-                <section id="tab-dashboard" class="space-y-4 sm:space-y-6 animate-fadeIn">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                        <!-- Botão Laranja com Badge Indicador de Avisos do Dia -->
-                        <button id="btn-avisos-dia" class="relative overflow-hidden bg-gradient-to-br from-orange-500 to-amber-600 text-white p-4 sm:p-6 rounded-2xl shadow-lg transition-all active:scale-[0.98] hover:shadow-xl flex flex-col justify-between h-36 sm:h-40 text-left group touch-target">
-                            <div class="flex justify-between items-start w-full">
-                                <div class="bg-white/20 p-2 sm:p-3 rounded-xl backdrop-blur-sm">
-                                    <i class="fa-solid fa-bell text-xl sm:text-2xl animate-pulse"></i>
+                <!-- DASHBOARD -->
+                <section id="tab-dashboard" class="space-y-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Card Avisos do Dia com efeito glass -->
+                        <button id="btn-avisos-dia" class="relative group overflow-hidden bg-gradient-to-br from-orange-500 to-amber-600 text-white p-7 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 flex flex-col justify-between h-44 text-left transform hover:scale-[1.02]">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-12 translate-x-12 blur-2xl"></div>
+                            <div class="flex justify-between items-start w-full relative z-10">
+                                <div class="bg-white/25 backdrop-blur-md p-3 rounded-2xl">
+                                    <i class="fa-solid fa-bell text-3xl animate-pulse"></i>
                                 </div>
-                                <span id="badge-count" class="relative bg-white text-orange-600 font-bold text-xs px-2.5 py-1 rounded-full shadow-sm min-w-[28px] text-center border border-orange-100">0</span>
+                                <span id="badge-count" class="bg-white text-orange-600 font-black text-sm px-3 py-1.5 rounded-full shadow-lg">0</span>
                             </div>
-                            <div>
-                                <h3 class="text-base sm:text-lg font-bold">Avisos do Dia</h3>
-                                <p class="text-orange-100 text-[11px] sm:text-xs mt-1 group-hover:underline flex items-center gap-1">
-                                    <span>Clique para visualizar</span>
-                                    <i class="fa-solid fa-arrow-right text-[10px]"></i>
-                                </p>
+                            <div class="relative z-10">
+                                <h3 class="text-xl font-black">Avisos do Dia</h3>
+                                <p class="text-orange-100 text-sm mt-1 group-hover:underline underline-offset-2">Clique para visualizar &rarr;</p>
                             </div>
                         </button>
 
-                        <!-- Card Informativo Estático -->
-                        <div class="bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-100 flex flex-col justify-between h-36 sm:h-40 hover:shadow-xl transition-shadow">
-                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-2 sm:p-3 rounded-xl w-fit shadow-md">
-                                <i class="fa-solid fa-calendar-check text-lg sm:text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Status Geral</h3>
-                                <p class="text-xl sm:text-2xl font-black text-gray-800 mt-1 flex items-center gap-2">
-                                    <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                                    Conectado
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Adicional: Resumo rápido de avisos no dashboard -->
-                    <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-chart-line text-orange-500"></i>
-                            Resumo Rápido
-                        </h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="text-center p-3 bg-gray-50 rounded-xl">
-                                <p class="text-2xl font-bold text-gray-800" id="total-avisos-resumo">0</p>
-                                <p class="text-xs text-gray-500">Total de Avisos</p>
-                            </div>
-                            <div class="text-center p-3 bg-gray-50 rounded-xl">
-                                <p class="text-2xl font-bold text-green-600" id="ativos-resumo">0</p>
-                                <p class="text-xs text-gray-500">Ativos</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- ABA: QUADRO DE AVISOS (CRUD & FILTROS) -->
-                <section id="tab-avisos" class="hidden space-y-4 sm:space-y-6">
-                    <!-- Topo do Gerenciamento -->
-                    <div class="bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-100">
-                        <div class="flex flex-col gap-4">
-                            <!-- Filtros Solicitados - Scroll horizontal em mobile -->
-                            <div class="overflow-x-auto pb-2 -mb-2">
-                                <div class="flex gap-2 min-w-max" id="filter-container">
-                                    <button onclick="setFilter('ativas')" id="filter-ativas" class="px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md touch-target">Ativas</button>
-                                    <button onclick="setFilter('hoje')" id="filter-hoje" class="px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 bg-gray-100 text-gray-600 hover:bg-gray-200 touch-target">Hoje</button>
-                                    <button onclick="setFilter('7dias')" id="filter-7dias" class="px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 bg-gray-100 text-gray-600 hover:bg-gray-200 touch-target">Próximos 7 dias</button>
-                                    <button onclick="setFilter('todos')" id="filter-todos" class="px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 bg-gray-100 text-gray-600 hover:bg-gray-200 touch-target">Todos</button>
+                        <!-- Card Ausências Hoje (expandido e refinado) -->
+                        <div id="card-ausencias-hoje" class="lg:col-span-2 bg-white rounded-3xl shadow-lg border border-gray-100 p-6 flex flex-col transition-all hover:shadow-xl">
+                            <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-rose-50 text-rose-500 p-2.5 rounded-xl shadow-inner"><i class="fa-solid fa-user-slash text-xl"></i></div>
+                                    <h3 class="font-black text-gray-800 text-lg">Ausências Programadas <span class="text-sm font-normal text-gray-500">(hoje)</span></h3>
                                 </div>
+                                <span id="badge-ausencias-count" class="bg-rose-100 text-rose-700 font-bold text-sm px-3 py-1.5 rounded-full border border-rose-200 min-w-[36px] text-center shadow-sm">0</span>
                             </div>
-                            
-                            <button onclick="openFormModal()" class="w-full bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 text-white font-medium px-4 py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-md active:scale-[0.98] touch-target">
-                                <i class="fa-solid fa-plus text-sm"></i> 
-                                <span>Criar Novo Aviso</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Lista de Cards de Avisos -->
-                    <div id="container-avisos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                        <!-- Loading skeletons -->
-                        <div class="col-span-full py-12 flex flex-col items-center justify-center text-gray-400">
-                            <i class="fa-solid fa-spinner text-3xl animate-spin mb-3"></i>
-                            <p>Carregando comunicados do banco de dados...</p>
+                            <div id="lista-ausencias-dashboard" class="flex flex-wrap gap-3 max-h-32 overflow-y-auto scrollbar-thin py-2">
+                                <p class="text-gray-400 text-sm italic">Nenhum funcionário afastado hoje.</p>
+                            </div>
                         </div>
                     </div>
                 </section>
 
+                <!-- AVISOS TAB -->
+                <section id="tab-avisos" class="hidden space-y-6">
+                    <div class="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white/80 backdrop-blur-sm p-5 rounded-2xl shadow-md border border-gray-200">
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="setFilter('ativas')" id="filter-custom-ativas" class="filter-btn px-5 py-2.5 text-sm font-bold rounded-xl bg-indigo-600 text-white shadow-md transition-all">Ativas</button>
+                            <button onclick="setFilter('hoje')" id="filter-custom-hoje" class="filter-btn px-5 py-2.5 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition">Hoje</button>
+                            <button onclick="setFilter('7dias')" id="filter-custom-7dias" class="filter-btn px-5 py-2.5 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition">Próximos 7d</button>
+                            <button onclick="setFilter('todos')" id="filter-custom-todos" class="filter-btn px-5 py-2.5 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition">Todos</button>
+                        </div>
+                        <button onclick="openFormModal('aviso')" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md">
+                            <i class="fa-solid fa-plus-circle"></i> Criar Aviso
+                        </button>
+                    </div>
+                    <div id="container-avisos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"></div>
+                </section>
+
+                <!-- AUSÊNCIAS TAB -->
+                <section id="tab-ausencias" class="hidden space-y-6">
+                    <div class="flex flex-wrap justify-between items-center gap-3 bg-white/70 p-5 rounded-2xl shadow-md border border-gray-200">
+                        <h2 class="text-sm font-black uppercase tracking-wider text-gray-500 flex items-center gap-2"><i class="fa-regular fa-calendar-check text-red-400"></i> Histórico & Planejamento</h2>
+                        <button onclick="openFormModal('ausencia')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-5 py-2.5 rounded-xl flex items-center gap-2 transition-all shadow-md">
+                            <i class="fa-solid fa-user-plus"></i> Cadastrar Ausência
+                        </button>
+                    </div>
+                    <div id="container-ausencias" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"></div>
+                </section>
             </div>
         </main>
     </div>
 
-    <!-- Floating Action Button for Mobile (Quick Add) -->
-    <button onclick="openFormModal()" class="fixed bottom-6 right-6 md:hidden bg-gradient-to-r from-orange-500 to-amber-600 text-white w-14 h-14 rounded-full shadow-xl flex items-center justify-center fab-mobile z-40 touch-target">
-        <i class="fa-solid fa-plus text-2xl"></i>
-    </button>
-
-    <!-- MODAL 1: FORMULÁRIO (CRIAR / EDITAR) -->
-    <div id="modal-form" class="fixed inset-0 z-50 flex items-center justify-center hidden p-3 sm:p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeFormModal()"></div>
-        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all flex flex-col modal-content relative z-10 animate-fadeInUp">
-            <div class="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-slate-50 to-gray-50">
-                <h2 id="modal-form-title" class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square text-orange-500"></i>
-                    Novo Aviso
-                </h2>
-                <button onclick="closeFormModal()" class="text-gray-400 hover:text-gray-600 text-xl p-2 rounded-lg hover:bg-gray-100 transition touch-target">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+    <!-- Mobile Sidebar (offcanvas) -->
+    <div id="mobile-sidebar" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden transition-all duration-300 md:hidden" onclick="toggleMobileSidebar()">
+        <div class="w-3/4 max-w-xs bg-slate-900 h-full shadow-2xl p-5 flex flex-col" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
+                <div class="flex items-center gap-2"><i class="fa-solid fa-chalkboard-user text-orange-500 text-2xl"></i><span class="text-white font-black text-xl">FlowHub</span></div>
+                <button onclick="toggleMobileSidebar()" class="text-gray-400 text-2xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <form id="form-aviso" class="p-4 sm:p-6 space-y-4">
+            <nav class="flex-1 space-y-3">
+                <button onclick="switchTab('dashboard'); toggleMobileSidebar();" id="mobile-nav-dashboard" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl bg-slate-800 text-white">Dashboard</button>
+                <button onclick="switchTab('avisos'); toggleMobileSidebar();" id="mobile-nav-avisos" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800">Quadro Avisos</button>
+                <button onclick="switchTab('ausencias'); toggleMobileSidebar();" id="mobile-nav-ausencias" class="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-slate-300 hover:bg-slate-800">Ausências</button>
+            </nav>
+        </div>
+    </div>
+
+    <!-- MODAL FORM (modais refinados) -->
+    <div id="modal-form" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 transition-all">
+        <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden modal-animation">
+            <div class="p-6 bg-gradient-to-r from-slate-50 to-white border-b border-gray-200 flex justify-between items-center">
+                <h2 id="modal-form-title" class="text-2xl font-black text-slate-800 flex items-center gap-2"><i class="fa-regular fa-pen-to-square text-indigo-500"></i> Cadastro</h2>
+                <button onclick="closeFormModal()" class="text-gray-400 hover:text-gray-700 text-2xl transition"><i class="fa-solid fa-circle-xmark"></i></button>
+            </div>
+            <form id="form-aviso" class="p-6 space-y-5">
                 <input type="hidden" id="aviso-id">
+                <input type="hidden" id="aviso-tipo" value="aviso">
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                        <i class="fa-solid fa-heading text-[10px]"></i> Título do Aviso
-                    </label>
-                    <input type="text" id="aviso-titulo" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-base transition-all" placeholder="Ex: Manutenção da Frota programada">
+                    <label id="label-titulo" class="block text-xs font-extrabold text-gray-600 uppercase tracking-wider mb-1">Título</label>
+                    <input type="text" id="aviso-titulo" required class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                        <i class="fa-solid fa-align-left text-[10px]"></i> Conteúdo informativo
-                    </label>
-                    <textarea id="aviso-conteudo" required rows="4" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-base transition-all resize-none" placeholder="Descreva os detalhes aqui..."></textarea>
+                    <label id="label-conteudo" class="block text-xs font-extrabold text-gray-600 uppercase tracking-wider mb-1">Detalhes</label>
+                    <textarea id="aviso-conteudo" required rows="4" class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"></textarea>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                            <i class="fa-regular fa-calendar"></i> Data Início
-                        </label>
-                        <input type="date" id="aviso-data-inicio" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-base transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1">
-                            <i class="fa-regular fa-calendar-check"></i> Data Expiração
-                        </label>
-                        <input type="date" id="aviso-data-fim" required class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-base transition-all">
-                    </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div><label class="block text-xs font-extrabold text-gray-600">Data Início</label><input type="date" id="aviso-data-inicio" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-400"></div>
+                    <div><label class="block text-xs font-extrabold text-gray-600">Data Fim</label><input type="date" id="aviso-data-fim" required class="w-full border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-400"></div>
                 </div>
-                <div class="pt-4 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
-                    <button type="button" onclick="closeFormModal()" class="px-5 py-3 border-2 border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all touch-target">Cancelar</button>
-                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl text-sm font-medium transition-all shadow-md active:scale-[0.98] touch-target">
-                        <i class="fa-regular fa-floppy-disk mr-2"></i> Salvar Registro
-                    </button>
+                <div class="pt-4 flex justify-end gap-3">
+                    <button type="button" onclick="closeFormModal()" class="px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 font-medium transition">Cancelar</button>
+                    <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md transition">Salvar</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL 2: VISUALIZAÇÃO RÁPIDA (AVISOS DO DIA) -->
-    <div id="modal-dia" class="fixed inset-0 z-50 flex items-center justify-center hidden p-3 sm:p-4">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="closeDiaModal()"></div>
-        <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden transform transition-all flex flex-col max-h-[85vh] relative z-10 animate-fadeInUp">
-            <div class="p-4 sm:p-6 bg-gradient-to-r from-orange-500 to-amber-600 text-white flex justify-between items-center shadow-lg">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-bullhorn text-xl"></i>
-                    <h2 class="text-lg sm:text-xl font-bold">Comunicados de Hoje</h2>
-                </div>
-                <button onclick="closeDiaModal()" class="text-white/80 hover:text-white text-2xl p-1 rounded-lg hover:bg-white/10 transition touch-target">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
+    <!-- MODAL EXIBIÇÃO RÁPIDA AVISOS DIA -->
+    <div id="modal-dia" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white w-full max-w-xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] modal-animation">
+            <div class="p-5 bg-gradient-to-r from-orange-500 to-amber-500 text-white flex justify-between items-center">
+                <div class="flex items-center gap-3"><i class="fa-solid fa-bullhorn text-2xl"></i><h2 class="text-2xl font-black">Destaques de Hoje</h2></div>
+                <button onclick="closeDiaModal()" class="text-white/80 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            <div id="container-modal-dia" class="p-4 sm:p-6 overflow-y-auto space-y-3 bg-gray-50 flex-1">
-                <!-- Inserido dinamicamente via JS -->
-            </div>
-            <div class="p-4 bg-white border-t border-gray-100 flex justify-end">
-                <button onclick="closeDiaModal()" class="px-6 py-3 bg-gradient-to-r from-gray-800 to-gray-900 text-white rounded-xl text-sm font-medium hover:shadow-lg transition-all active:scale-[0.98] touch-target">
-                    <i class="fa-regular fa-circle-check mr-2"></i> Fechar
-                </button>
-            </div>
+            <div id="container-modal-dia" class="p-6 overflow-y-auto space-y-4 bg-gray-50 flex-1"></div>
+            <div class="p-4 bg-white border-t flex justify-end"><button onclick="closeDiaModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-bold">Fechar</button></div>
         </div>
     </div>
 
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        
-        .animate-fadeIn {
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        .animate-fadeInUp {
-            animation: fadeInUp 0.25s ease-out;
-        }
-        
-        /* Improved card styles */
-        .card-modern {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .card-modern:active {
-            transform: scale(0.98);
-        }
-        
-        /* Status badge improvements */
-        .status-badge {
-            backdrop-filter: blur(4px);
-        }
-    </style>
-
-    <!-- LOGICA DE COMPORTAMENTO INTERNO DO LAYOUT -->
     <script>
-        // Mobile menu functions
-        window.toggleMobileMenu = function() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobile-menu-overlay');
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
-            document.body.style.overflow = sidebar.classList.contains('-translate-x-full') ? '' : 'hidden';
-        }
-        
-        window.closeMobileMenu = function() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('mobile-menu-overlay');
-            sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('hidden');
-            document.body.style.overflow = '';
-        }
-        
-        // Alternância de abas simples
+        // Menu mobile
+        window.toggleMobileSidebar = function() { document.getElementById('mobile-sidebar').classList.toggle('hidden'); }
         window.switchTab = function(tab) {
-            const sections = { dashboard: 'tab-dashboard', avisos: 'tab-avisos' };
-            const navButtons = { dashboard: 'btn-nav-dashboard', avisos: 'btn-nav-avisos' };
-            const title = { dashboard: 'Dashboard Omnichannel', avisos: 'Painel de Controle - Quadro de Avisos' };
-            
-            Object.keys(sections).forEach(key => {
-                document.getElementById(sections[key]).classList.toggle('hidden', key !== tab);
-                const btn = document.getElementById(navButtons[key]);
-                if (key === tab) {
-                    btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 bg-slate-700 text-white font-medium hover:bg-slate-600 active:scale-[0.98]";
-                } else {
-                    btn.className = "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 text-slate-400 hover:bg-slate-700 hover:text-white active:scale-[0.98]";
-                }
+            const tabs = ['dashboard', 'avisos', 'ausencias'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== tab);
+                const btn = document.getElementById(`btn-nav-${t}`);
+                if(btn) btn.className = `w-full flex items-center gap-4 px-5 py-3.5 rounded-xl text-left transition-all duration-200 ${t === tab ? 'bg-slate-800 text-white font-semibold shadow-md' : 'text-slate-400 hover:bg-slate-800/70 hover:text-white font-medium'}`;
+                const mobileBtn = document.getElementById(`mobile-nav-${t}`);
+                if(mobileBtn) mobileBtn.className = `w-full flex items-center gap-4 px-4 py-3 rounded-xl ${t === tab ? 'bg-slate-800 text-white' : 'text-slate-300 hover:bg-slate-800'}`;
             });
-            document.getElementById('page-title').innerHTML = title[tab];
-            
-            // Close mobile menu after selection
-            if (window.innerWidth < 768) {
-                closeMobileMenu();
-            }
+            const titles = { dashboard: 'Dashboard Estratégico', avisos: 'Comunicados Oficiais', ausencias: 'Planejamento de Ausências' };
+            document.getElementById('page-title').innerText = titles[tab];
         }
+
+        // relógio ao vivo
+        function updateClock() {
+            const now = new Date(); document.getElementById('liveClock') && (document.getElementById('liveClock').innerText = now.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}));
+        }
+        setInterval(updateClock, 1000); updateClock();
     </script>
 
-    <!-- INTEGRAÇÃO CORE FIREBASE FIRESTORE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { 
-            getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot 
-        } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // Suas Credenciais Fornecidas
         const firebaseConfig = {
             apiKey: "AIzaSyDG_lUj5dfoawA6ElBxv79f2acVqDKN3bg",
             authDomain: "quadro-de-avisos-2ea31.firebaseapp.com",
@@ -455,246 +260,70 @@
             messagingSenderId: "256469390855",
             appId: "1:256469390855:web:6c1aed35cf65691f7afca2"
         };
-
-        // Inicializações
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const colRef = collection(db, "avisos");
+        let localData = []; 
+        let currentFilter = 'ativas'; 
 
-        // Estado local da aplicação
-        let localAvisos = [];
-        let currentFilter = 'ativas';
+        const getTodayString = () => new Date().toISOString().split('T')[0];
+        const formatDate = (dStr) => { if(!dStr) return ""; const [y,m,d]=dStr.split('-'); return `${d}/${m}/${y}`; };
 
-        // Data helpers locais
-        const getTodayString = () => {
-            const d = new Date();
-            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        };
-
-        // Ouvinte em tempo real
         const q = query(colRef, orderBy("dataInicio", "desc"));
         onSnapshot(q, (snapshot) => {
-            localAvisos = [];
-            snapshot.forEach(doc => {
-                localAvisos.push({ id: doc.id, ...doc.data() });
-            });
-            processDashboardIndicators();
-            renderAvisos();
-            updateDashboardSummary();
-        }, (error) => {
-            console.error("Erro no Sync Firestore: ", error);
+            localData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            updateInterface();
         });
-        
-        // Update dashboard summary
-        function updateDashboardSummary() {
+
+        function updateInterface() {
             const hoje = getTodayString();
-            const total = localAvisos.length;
-            const ativos = localAvisos.filter(a => hoje <= a.dataFim).length;
-            document.getElementById('total-avisos-resumo').innerText = total;
-            document.getElementById('ativos-resumo').innerText = ativos;
+            const avisos = localData.filter(i => i.tipo !== 'ausencia');
+            const ausencias = localData.filter(i => i.tipo === 'ausencia');
+            const avisosHoje = avisos.filter(a => hoje >= a.dataInicio && hoje <= a.dataFim);
+            document.getElementById('badge-count').innerText = avisosHoje.length;
+            document.getElementById('btn-avisos-dia').onclick = () => openDiaModal(avisosHoje);
+            
+            const ausenciasHoje = ausencias.filter(a => hoje >= a.dataInicio && hoje <= a.dataFim);
+            document.getElementById('badge-ausencias-count').innerText = ausenciasHoje.length;
+            const containerAusenciasDash = document.getElementById('lista-ausencias-dashboard');
+            if(ausenciasHoje.length === 0) containerAusenciasDash.innerHTML = `<p class="text-gray-400 text-sm italic">Nenhum funcionário afastado hoje.</p>`;
+            else containerAusenciasDash.innerHTML = ausenciasHoje.map(aus => `<div class="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm"><i class="fa-solid fa-user-clock"></i><span><strong>${escapeHtml(aus.titulo)}</strong> (${escapeHtml(aus.conteudo)})</span></div>`).join('');
+            
+            renderAvisosAba(avisos, hoje);
+            renderAusenciasAba(ausencias, hoje);
         }
 
-        // Processa as métricas críticas e o badge do dia no Dashboard
-        function processDashboardIndicators() {
-            const hoje = getTodayString();
-            const avisosDoDia = localAvisos.filter(a => hoje >= a.dataInicio && hoje <= a.dataFim);
-            
-            const badge = document.getElementById('badge-count');
-            badge.innerText = avisosDoDia.length;
-            
-            const btnDia = document.getElementById('btn-avisos-dia');
-            btnDia.onclick = () => openDiaModal(avisosDoDia);
-        }
-
-        // Renderiza os dados filtrados na Aba de Avisos
-        function renderAvisos() {
+        function renderAvisosAba(avisos, hoje) {
             const container = document.getElementById('container-avisos');
-            const hoje = getTodayString();
-            
-            let filtered = [...localAvisos];
-            if (currentFilter === 'hoje') {
-                filtered = localAvisos.filter(a => hoje >= a.dataInicio && hoje <= a.dataFim);
-            } else if (currentFilter === 'ativas') {
-                filtered = localAvisos.filter(a => hoje <= a.dataFim);
-            } else if (currentFilter === '7dias') {
-                const dateLimit = new Date();
-                dateLimit.setDate(dateLimit.getDate() + 7);
-                const limitStr = dateLimit.toISOString().split('T')[0];
-                filtered = localAvisos.filter(a => a.dataInicio <= limitStr && a.dataFim >= hoje);
-            }
+            let filtered = [...avisos];
+            if (currentFilter === 'hoje') filtered = avisos.filter(a => hoje >= a.dataInicio && hoje <= a.dataFim);
+            else if (currentFilter === 'ativas') filtered = avisos.filter(a => hoje <= a.dataFim);
+            else if (currentFilter === '7dias') { const limit = new Date(); limit.setDate(limit.getDate()+7); const limitStr = limit.toISOString().split('T')[0]; filtered = avisos.filter(a => a.dataInicio <= limitStr && a.dataFim >= hoje); }
+            if(filtered.length === 0) { container.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 bg-white/60 backdrop-blur-sm border border-dashed rounded-3xl text-sm">✨ Nenhum aviso encontrado.</div>`; return; }
+            container.innerHTML = filtered.map(a => `<div class="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 card-hover flex flex-col"><div class="flex justify-between items-start mb-2"><span class="${hoje >= a.dataInicio && hoje <= a.dataFim ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-500'} text-[11px] font-black px-3 py-1 rounded-full">${hoje >= a.dataInicio && hoje <= a.dataFim ? 'ATIVO' : 'EXPIRADO'}</span><div class="flex gap-2"><button onclick="editAviso('${a.id}')" class="text-gray-400 hover:text-indigo-600 p-1"><i class="fa-solid fa-pen"></i></button><button onclick="deleteAviso('${a.id}')" class="text-gray-400 hover:text-rose-600 p-1"><i class="fa-solid fa-trash"></i></button></div></div><h3 class="font-black text-gray-900 text-lg mt-1">${escapeHtml(a.titulo)}</h3><p class="text-[11px] text-gray-400 mt-1 flex items-center gap-1"><i class="fa-regular fa-calendar"></i> ${formatDate(a.dataInicio)} → ${formatDate(a.dataFim)}</p><p class="text-gray-700 text-sm mt-3 pt-2 border-t border-gray-100 whitespace-pre-wrap">${escapeHtml(a.conteudo)}</p></div>`).join('');
+        }
 
-            if(filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full py-12 text-center bg-white/80 backdrop-blur-sm rounded-2xl border border-dashed border-gray-300 text-gray-500">
-                        <i class="fa-solid fa-folder-open text-4xl mb-3 text-gray-400"></i>
-                        <p class="font-medium text-sm">Nenhum aviso encontrado neste filtro.</p>
-                        <p class="text-xs text-gray-400 mt-1">Tente outro filtro ou crie um novo aviso</p>
-                    </div>`;
-                return;
-            }
-
-            container.innerHTML = filtered.map(aviso => {
-                const isActive = hoje >= aviso.dataInicio && hoje <= aviso.dataFim;
-                const badgeStatus = isActive 
-                    ? `<span class="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] uppercase font-bold px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="fa-solid fa-circle text-[6px]"></i> Ativo</span>`
-                    : `<span class="bg-gray-100 text-gray-600 border border-gray-200 text-[11px] uppercase font-bold px-2.5 py-1 rounded-lg flex items-center gap-1"><i class="fa-solid fa-circle text-[6px]"></i> Inativo</span>`;
-
-                return `
-                <div class="bg-white/80 backdrop-blur-sm border border-gray-100 rounded-2xl shadow-md hover:shadow-xl transition-all duration-200 flex flex-col justify-between overflow-hidden card-modern">
-                    <div class="p-4 sm:p-5 space-y-3">
-                        <div class="flex justify-between items-start gap-2">
-                            ${badgeStatus}
-                            <div class="flex gap-1">
-                                <button onclick="editAviso('${aviso.id}')" class="text-gray-400 hover:text-blue-600 p-2 rounded-xl transition-all touch-target" title="Editar"><i class="fa-solid fa-pen-to-square text-sm"></i></button>
-                                <button onclick="deleteAviso('${aviso.id}')" class="text-gray-400 hover:text-red-600 p-2 rounded-xl transition-all touch-target" title="Excluir"><i class="fa-solid fa-trash-can text-sm"></i></button>
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-gray-900 text-base leading-tight">${escapeHtml(aviso.titulo)}</h3>
-                            <p class="text-xs text-gray-400 mt-1.5 flex items-center gap-1.5 flex-wrap">
-                                <i class="fa-regular fa-calendar"></i> ${formatDate(aviso.dataInicio)} → ${formatDate(aviso.dataFim)}
-                            </p>
-                        </div>
-                        <p class="text-gray-600 text-sm leading-relaxed pt-2 border-t border-gray-100 line-clamp-3">${escapeHtml(aviso.conteudo)}</p>
-                    </div>
-                </div>`;
+        function renderAusenciasAba(ausencias, hoje) {
+            const container = document.getElementById('container-ausencias');
+            if(ausencias.length === 0) { container.innerHTML = `<div class="col-span-full py-12 text-center text-gray-400 bg-white/60 backdrop-blur-sm border border-dashed rounded-3xl text-sm">📭 Nenhuma ausência cadastrada.</div>`; return; }
+            container.innerHTML = ausencias.map(a => {
+                const status = hoje >= a.dataInicio && hoje <= a.dataFim ? 'Afastado Hoje' : (hoje > a.dataFim ? 'Finalizado' : 'Agendado');
+                const badgeColor = status === 'Afastado Hoje' ? 'bg-rose-100 text-rose-700 border-rose-200' : (status === 'Finalizado' ? 'bg-gray-100 text-gray-500' : 'bg-amber-100 text-amber-700');
+                return `<div class="bg-white rounded-2xl p-6 shadow-lg border-l-8 ${status === 'Afastado Hoje' ? 'border-l-rose-500' : 'border-l-slate-300'} card-hover"><div class="flex justify-between items-start"><span class="${badgeColor} border text-[10px] font-black px-3 py-1 rounded-full">${status}</span><div class="flex gap-2"><button onclick="editAviso('${a.id}')" class="text-gray-400 hover:text-indigo-600"><i class="fa-solid fa-pen"></i></button><button onclick="deleteAviso('${a.id}')" class="text-gray-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button></div></div><h3 class="font-black text-gray-900 mt-3 flex items-center gap-2"><i class="fa-regular fa-user"></i> ${escapeHtml(a.titulo)}</h3><p class="text-sm text-rose-600 font-semibold mt-1"><i class="fa-regular fa-calendar"></i> ${formatDate(a.dataInicio)} — ${formatDate(a.dataFim)}</p><p class="text-gray-600 text-sm italic mt-2"><i class="fa-regular fa-message"></i> ${escapeHtml(a.conteudo)}</p></div>`;
             }).join('');
         }
-        
-        // Escape HTML to prevent XSS
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
 
-        // Manipulação de Filtros
-        window.setFilter = function(filterType) {
-            currentFilter = filterType;
-            const filters = ['todos', 'hoje', '7dias', 'ativas'];
-            filters.forEach(f => {
-                const btn = document.getElementById(`filter-${f}`);
-                if(f === filterType) {
-                    btn.className = "px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md touch-target";
-                } else {
-                    btn.className = "px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 bg-gray-100 text-gray-600 hover:bg-gray-200 touch-target";
-                }
-            });
-            renderAvisos();
-        }
-
-        // Submissão do Formulário
-        document.getElementById('form-aviso').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('aviso-id').value;
-            const payload = {
-                titulo: document.getElementById('aviso-titulo').value.trim(),
-                conteudo: document.getElementById('aviso-conteudo').value.trim(),
-                dataInicio: document.getElementById('aviso-data-inicio').value,
-                dataFim: document.getElementById('aviso-data-fim').value
-            };
-            
-            if (!payload.titulo || !payload.conteudo) {
-                alert("Por favor, preencha todos os campos obrigatórios.");
-                return;
-            }
-
-            try {
-                if(id) {
-                    await updateDoc(doc(db, "avisos", id), payload);
-                } else {
-                    await addDoc(colRef, payload);
-                }
-                closeFormModal();
-            } catch (err) {
-                alert("Erro ao salvar no banco Firestore: " + err.message);
-            }
-        });
-
-        // Deletar Documento
-        window.deleteAviso = async function(id) {
-            if(confirm("⚠️ Tem certeza que deseja excluir permanentemente este comunicado?")) {
-                try {
-                    await deleteDoc(doc(db, "avisos", id));
-                } catch(err) {
-                    alert("Erro ao excluir: " + err.message);
-                }
-            }
-        }
-
-        // Preparar modal para Edição
-        window.editAviso = function(id) {
-            const item = localAvisos.find(a => a.id === id);
-            if(!item) return;
-
-            document.getElementById('aviso-id').value = item.id;
-            document.getElementById('aviso-titulo').value = item.titulo;
-            document.getElementById('aviso-conteudo').value = item.conteudo;
-            document.getElementById('aviso-data-inicio').value = item.dataInicio;
-            document.getElementById('aviso-data-fim').value = item.dataFim;
-
-            document.getElementById('modal-form-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-orange-500"></i> Editar Comunicado';
-            document.getElementById('modal-form').classList.remove('hidden');
-        }
-
-        // Gerenciamento de janelas modais
-        window.openFormModal = function() {
-            document.getElementById('form-aviso').reset();
-            document.getElementById('aviso-id').value = "";
-            document.getElementById('modal-form-title').innerHTML = '<i class="fa-solid fa-plus-circle text-orange-500"></i> Novo Aviso';
-            document.getElementById('modal-form').classList.remove('hidden');
-            document.getElementById('aviso-data-inicio').value = getTodayString();
-        }
-        
-        window.closeFormModal = function() {
-            document.getElementById('modal-form').classList.add('hidden');
-        }
-
-        window.openDiaModal = function(listaDoDia = []) {
-            const container = document.getElementById('container-modal-dia');
-            if(listaDoDia.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-8 text-gray-500">
-                        <i class="fa-regular fa-face-smile-wink text-4xl mb-3 text-gray-400"></i>
-                        <p class="font-medium text-sm">Nenhum aviso urgente para hoje!</p>
-                        <p class="text-xs text-gray-400 mt-1">Tudo tranquilo por aqui 🎉</p>
-                    </div>`;
-            } else {
-                container.innerHTML = listaDoDia.map(aviso => `
-                    <div class="bg-white p-4 sm:p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
-                        <div class="flex items-start gap-3">
-                            <div class="bg-orange-100 p-2 rounded-lg">
-                                <i class="fa-solid fa-bell text-orange-600"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-bold text-gray-900 text-base mb-2">${escapeHtml(aviso.titulo)}</h4>
-                                <p class="text-sm text-gray-700 leading-relaxed">${escapeHtml(aviso.conteudo)}</p>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            document.getElementById('modal-dia').classList.remove('hidden');
-        }
-        
-        window.closeDiaModal = function() {
-            document.getElementById('modal-dia').classList.add('hidden');
-        }
-
-        // Formatação de data
-        function formatDate(dateStr) {
-            if(!dateStr) return "";
-            const parts = dateStr.split('-');
-            return `${parts[2]}/${parts[1]}/${parts[0]}`;
-        }
-        
-        // Close modals on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeFormModal();
-                closeDiaModal();
-            }
-        });
+        window.setFilter = function(filterType) { currentFilter = filterType; document.querySelectorAll('.filter-btn').forEach(btn => btn.className = "filter-btn px-5 py-2.5 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition"); document.getElementById(`filter-custom-${filterType}`).className = "filter-btn px-5 py-2.5 text-sm font-bold rounded-xl bg-indigo-600 text-white shadow-md transition-all"; updateInterface(); }
+        document.getElementById('form-aviso').addEventListener('submit', async (e) => { e.preventDefault(); const id = document.getElementById('aviso-id').value; const payload = { titulo: document.getElementById('aviso-titulo').value, conteudo: document.getElementById('aviso-conteudo').value, dataInicio: document.getElementById('aviso-data-inicio').value, dataFim: document.getElementById('aviso-data-fim').value, tipo: document.getElementById('aviso-tipo').value }; try { if(id) await updateDoc(doc(db, "avisos", id), payload); else await addDoc(colRef, payload); closeFormModal(); } catch(err) { alert("Erro: "+err.message); } });
+        window.deleteAviso = async (id) => { if(confirm("Remover permanentemente?")) try { await deleteDoc(doc(db, "avisos", id)); } catch(e){ alert("Erro: "+e.message); } };
+        window.editAviso = (id) => { const item = localData.find(i=>i.id===id); if(!item) return; document.getElementById('aviso-id').value=item.id; document.getElementById('aviso-tipo').value=item.tipo||'aviso'; document.getElementById('aviso-titulo').value=item.titulo; document.getElementById('aviso-conteudo').value=item.conteudo; document.getElementById('aviso-data-inicio').value=item.dataInicio; document.getElementById('aviso-data-fim').value=item.dataFim; adjustLabels(item.tipo||'aviso'); document.getElementById('modal-form-title').innerHTML = `<i class="fa-regular fa-pen-to-square"></i> ${item.tipo==='ausencia'? 'Editar Ausência' : 'Editar Aviso'}`; document.getElementById('modal-form').classList.remove('hidden'); }
+        window.openFormModal = (tipo) => { document.getElementById('form-aviso').reset(); document.getElementById('aviso-id').value=""; document.getElementById('aviso-tipo').value=tipo; adjustLabels(tipo); document.getElementById('modal-form-title').innerHTML = `<i class="fa-regular fa-plus-square"></i> ${tipo==='ausencia'? 'Nova Ausência' : 'Novo Aviso'}`; document.getElementById('aviso-data-inicio').value=getTodayString(); document.getElementById('modal-form').classList.remove('hidden'); }
+        function adjustLabels(tipo) { const isAus = tipo==='ausencia'; document.getElementById('label-titulo').innerText = isAus ? "Nome do Funcionário" : "Título do Aviso"; document.getElementById('aviso-titulo').placeholder = isAus ? "Ex: Ana Carolina" : "Ex: Feriado Corporativo"; document.getElementById('label-conteudo').innerText = isAus ? "Motivo do Afastamento" : "Conteúdo do Aviso"; document.getElementById('aviso-conteudo').placeholder = isAus ? "Férias / Atestado / Licença" : "Informações relevantes..."; }
+        window.closeFormModal = () => document.getElementById('modal-form').classList.add('hidden');
+        window.openDiaModal = (lista) => { const container = document.getElementById('container-modal-dia'); if(!lista.length) container.innerHTML = `<div class="text-center p-6 text-gray-400"><i class="fa-regular fa-bell-slash text-3xl"></i><p class="mt-2">Nenhum aviso ativo para hoje.</p></div>`; else container.innerHTML = lista.map(a=>`<div class="bg-white p-5 rounded-2xl shadow-md border-l-4 border-orange-400"><h4 class="font-black text-gray-900">${escapeHtml(a.titulo)}</h4><p class="text-gray-600 text-sm mt-2 whitespace-pre-wrap">${escapeHtml(a.conteudo)}</p><div class="text-right text-[10px] text-gray-400 mt-2"><i class="fa-regular fa-calendar"></i> ${formatDate(a.dataInicio)} a ${formatDate(a.dataFim)}</div></div>`).join(''); document.getElementById('modal-dia').classList.remove('hidden'); };
+        window.closeDiaModal = () => document.getElementById('modal-dia').classList.add('hidden');
+        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m;}); }
+        adjustLabels('aviso');
     </script>
 </body>
 </html>
